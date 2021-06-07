@@ -1,14 +1,13 @@
-
 """
 File name: nn.py
 Author: Luigi Cesarini
 E-mail: luigi.cesarini@iusspavia.it
-Date created: 09 July 2020 
+Date created: 13 June 2020 
 Date last modified: 07 June 2021
 
 ####################################################################
 PURPOSE:
-The script train and run the neural networks models for the flood case.
+The script train and run the neural networks models for the drought case.
 It also explores the different set of parameters to establish the domain 
 of configurations.
 The evaluation metrics are printed to disk in csv format.
@@ -27,11 +26,11 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
 from imblearn.over_sampling import RandomOverSampler, SMOTE
-from imblearn.under_sampling import RandomUnderSampler
 
+import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
-from tensorflow.keras.callbacks import EarlyStopping
+from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
 from sklearn.metrics import confusion_matrix
 from itertools import combinations
 
@@ -39,7 +38,6 @@ import os
 import time
 import datetime
 import matplotlib.pyplot as plt
-
 ################################
 #DEFINITION OF CUSTOM FUNCTION
 ################################
@@ -62,42 +60,59 @@ def plot_cm(labels, predictions, p):
 #Set working directory to the parent directory of the project:"SMART"
 print(os.getcwd())
 #os.chdir(<SMART>)
-# Create an early stopping callback. This callback is used to stop the training once
-# the minimization of the validation loss reaches a plateau, thus, avoiding overfitting.
-es = EarlyStopping(monitor='val_loss', min_delta=1e-20, verbose=1, patience=100)
+# Create two callbacks. 
+# The early stopping is used to stop the training once the minimization of the validation loss reaches a plateau, thus, avoiding overfitting.
+# The ReduceLROnPlateau is used to reduce the learning rate of the optimizer when the minimization of the validation loss reaches a plateau
+es = EarlyStopping(monitor='val_loss', min_delta=0, verbose=1, patience=20)
+rlr = ReduceLROnPlateau(monitor='val_loss',
+                        factor=0.5,
+                        min_lr=1e-6,
+                        patience=5,
+                        verbose=1)   
 # STORE THE ACRONYM OF THE METHOD FOR PRINTING PURPOSES
 name_method = "nn"
-####### Load the whole datasets
-data_dom = pd.read_csv(find('dataset_DOM.txt',os.getcwd()), sep = "\t")
+# For the drought case the SPI was used as drought indicator.
+# The spi can be calculated at different accumulation time. 
+# For this study spi equal to 1,3,6 and 12 were taaken into account
+# This instance the training will be run for spi equal to six
+SPI = "six"
+####### Load the data
+data_dom = pd.read_csv(find(f"dataset_spi_{SPI}.csv",os.getcwd()),sep = "\t")
 # Shift soil moisture to get the values of the previous day 
-data_dom.iloc[:-1,1:5] = data_dom.iloc[:,1:5].shift(-1).iloc[:-1,:]
+data_dom[['SM1 Mean','SM2 Mean','SM3 Mean','SM4 Mean']].shift(-1)
+# Drop dates for which we do not have data regarding the event
+data_dom = data_dom.drop(['Event_PDSI'],axis = 1).dropna()
+
 # Split data for training and testing (75/25). A percentage of the training set will later be used 
 # to validate the training process
-x_train, x_test, y_train, y_test = train_test_split(data_dom.drop(['Output'], axis=1),
-                                                    data_dom[['Output']],
+x_train, x_test, y_train, y_test = train_test_split(data_dom.drop(['Event'], axis=1),
+                                                    data_dom[['Event']],
                                                     test_size=0.25,
                                                     random_state=42)
-
-                            
 # Scale the data between 0 and 1
 scaler = MinMaxScaler(feature_range=(0,1))
-scaler.fit(x_train.drop(["Date"],axis = 1)	)
-x_train.iloc[:,1:] = scaler.transform(x_train.drop(["Date"],axis = 1)	)
-x_test.iloc[:,1:]  = scaler.transform(x_test.drop(["Date"],axis = 1)	)
+scaler.fit(x_train.drop(["Year", "Week"],axis = 1)	)
+x_train.iloc[:,2:] = scaler.transform(x_train.drop(["Year", "Week"],axis = 1)	)
+x_test.iloc[:,2:]  = scaler.transform(x_test.drop(["Year", "Week"],axis = 1)	)
 
 #write csv with dates and observed historical events
+#x_test[["Year", "Week"]].join(y_test).to_csv("./Drought/Results/nn/dates_training.csv" ,quoting=0, index=False, index_label=False, header=True, sep='\t')
 timestamp = datetime.datetime.today().strftime('%d_%b_%y')   #timestamp beginning fold i-th
-if os.path.isdir(f'MachineLearning/Flood/output/{name_method}'):
-    x_test.Date.to_frame().join(y_test).to_csv(f"MachineLearning/Flood/output/{name_method}/dates_training_{timestamp}.csv",
+if os.path.isdir(f'MachineLearning/Drought/output/{name_method}'):
+    x_test[["Year", "Week"]].join(y_test).to_csv(f"MachineLearning/Drought/output/{name_method}/dates_training_{timestamp}.csv",
                                                 quoting=0, index=False, index_label=False, header=True, sep='\t')
 else:
-    os.mkdir(f'MachineLearning/Flood/output/{name_method}')
-    x_test.Date.to_frame().join(y_test).to_csv(f"MachineLearning/Flood/output/{name_method}/dates_training_{timestamp}.csv",
+    os.mkdir(f'MachineLearning/Drought/output/{name_method}')
+    x_test[["Year", "Week"]].join(y_test).to_csv(f"MachineLearning/Drought/output/{name_method}/dates_training_{timestamp}.csv",
                                 quoting=0, index=False, index_label=False, header=True, sep='\t')
 
 #### Computes the class weights
-event = 0.5 * len(y_train) / y_train.Output.value_counts()[1]
-no_event = 0.5 * len(y_train) / (len(y_train)-y_train.Output.value_counts()[1])
+event = 0.5 * len(y_train) / y_train.Event.value_counts()[1]
+no_event = 0.5 * len(y_train) / (len(y_train)-y_train.Event.value_counts()[1])
+
+
+event_test = 0.5 * len(y_test) / y_test.Event.value_counts()[1]
+no_event_test = 0.5 * len(y_test) / (len(y_test)-y_test.Event.value_counts()[1])
 
 # Routines that creates all the combinations of dataset we want to explore:
 # Remember, in this istance, the soil moisture dataset are added 
@@ -123,8 +138,6 @@ Initialization of the parameters the training iterate over:
 Sampling technique to fight class imbalance (sampling_technique): 
 1) Unweighted (unw)
 2) Class Weight (cw)
-3) Oversampling (over)
-4) Synthetic Minority over sampling technique (smote)
 Number of hidden layers (num_hidden):
 - num_hidden = range(1,9)
 Number of hidden nodes (hidden_nodes):
@@ -135,7 +148,7 @@ Activation function (hidden_act):
 
 The training for all the configurations is obtained by iterating over the abovementioned parameters
 """
-sampling_technique = ["unw","cw","over","smote"]
+sampling_technique = ["unw","cw"]
 num_hidden = np.arange(9)   # Number of hidden layer
 hidden_nodes = [2**(numero_layer+1) for numero_layer in num_hidden]
 hidden_act = ["relu","tanh"] # Activation function
@@ -147,9 +160,12 @@ batch_size = 64**2
 validation_split = 0.2 #Percentage of the training set used to validate the model during the traininig proces (i.e., 15% of the original dataset)
 call_back = [es]
 
+# Create input and target before the training loop
+x_tr = x_train.drop(["Year","Week"],axis = 1)				
+y_tr = y_train 
 for st in sampling_technique:
   """
-  Four type of sampling: pristine data,class weight, over-sampling, smote
+  Four type of sampling: pristine data,class weight
   Here we check all the condition realtive to the type of sampling we are using
   """
   print(st)
@@ -159,17 +175,6 @@ for st in sampling_technique:
                     1: event}
   else:
     class_weight = None
-
-  if st == "over":
-    ov_s = RandomOverSampler(random_state=42)
-    x_tr, y_tr = ov_s.fit_resample(x_train.drop(["Date"],axis = 1),y_train)
-  elif st == "smote":
-    sm = SMOTE(random_state=42)
-    x_tr, y_tr = sm.fit_resample(x_train.drop(["Date"],axis = 1),y_train)
-  else:
-    x_tr = x_train.drop(["Date"],axis = 1)				
-    y_tr = y_train 
-
 
   """
   Herein we iterate over several dataset combination:
@@ -215,7 +220,7 @@ for st in sampling_technique:
           outputs = layers.Dense(1,activation="sigmoid")(x)
 
           #write the model
-          model = keras.Model(inputs=inputs, outputs=outputs, name="nn_flood")	
+          model = keras.Model(inputs=inputs, outputs=outputs, name="nn_drought")	
           # Print hte summary of the architecture to screen
           model.summary()
 
@@ -310,14 +315,14 @@ for st in sampling_technique:
                                                 index=[0])
               # Save the metrics to a csv file
               oggi = datetime.datetime.today() #Timestamp for file name
-              df_metrics.to_csv(f"MachineLearning/Flood/output/{name_method}/metrics_{''.join(name_DS[op][2] for op in np.arange(len(name_DS)))}_{st}_{oggi.strftime('%d_%b_%y')}.csv", 
+              df_metrics.to_csv(f"MachineLearning/Drought/output/{name_method}/metrics_{''.join(name_DS[op][2] for op in np.arange(len(name_DS)))}_{st}_{oggi.strftime('%d_%b_%y')}.csv", 
               quoting=0, index=False, index_label=False, mode='a', header=False, sep='\t')
 
           # Create DataFrame with the prediction provided by the model with the highest F1 score for a given threshold probability
           df_predictions = pd.DataFrame((predictions > prob_v[f1 == max(f1)][len(prob_v[f1 == max(f1)]) - 1]).astype('int'),
                                         columns = [f"{st}-{''.join(name_DS[op][2] for op in np.arange(len(name_DS)))}-{J}-{hidden_act[n]}"]).transpose()
           # Print the predictions to csv                    
-          df_predictions.to_csv(f"MachineLearning/Flood/output/{name_method}/predictions_{name_method}_{oggi.strftime('%d_%b_%y')}.csv",
+          df_predictions.to_csv(f"MachineLearning/Drought/output/{name_method}/predictions_{name_method}_{oggi.strftime('%d_%b_%y')}.csv",
                                 quoting=0, index=True,mode='a', header=False, sep='\t') 
 
 
@@ -326,5 +331,4 @@ for st in sampling_technique:
           ##########################################################
 
           plot_cm(y_test,predictions, 0.6)
-          
 

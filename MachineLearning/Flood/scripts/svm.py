@@ -12,6 +12,10 @@ The script train and run the support vector machine models for the flood case.
 It also explores the different set of parameters to establish the domain 
 of configurations.
 The evaluation metrics are printed to disk in csv format.
+
+For detailed information about the methodology, the data and the methods used to build
+this models, please check the related article at:
+https://nhess.copernicus.org/preprints/nhess-2020-220/ 
 """
 # MODULE IMPORTS
 import os
@@ -41,12 +45,12 @@ import datetime
 ################################
 #DEFINITION OF CUSTOM FUNCTION
 ################################
+# This function is used to find the path to a specific file
 def find(name, path):
     for root,dirs,files in os.walk(path):
         if name in files:
             return os.path.join(root, name)
-
-
+# This function is  used to plot the confusion matrix for a given probability threshold
 def plot_cm(labels, predictions, p):
     cm = confusion_matrix(labels, predictions > p)
     plt.figure(figsize=(5, 5))
@@ -59,7 +63,7 @@ def plot_cm(labels, predictions, p):
 #Set working directory to the parent of the script folder
 #os.chdir('..')
 print(os.getcwd())
-# STORE THE ACRONYM OF THE METHOD FOR PRINTING REASONS
+# STORE THE ACRONYM OF THE METHOD FOR PRINTING PURPOSES
 name_method = "svm"
 
 # Load the whole dataset 
@@ -67,13 +71,12 @@ data_dom = pd.read_csv(find('dataset_DOM.txt',os.getcwd()), sep = "\t")
 # Shift soil moisture to get the values of the previous day 
 data_dom.iloc[:-1,1:5] = data_dom.iloc[:,1:5].shift(-1).iloc[:-1,:]
 
-
-# Routines that creates all the configurations we want to explore:
+# Routines that creates all the combinations of dataset we want to explore:
 # Remember, in this istance, the soil moisture dataset are added 
 # directly to the 6 rainfall datasets (e.g., No combination of 2 rainfall
 # datasets + 1 soil moisture was used and so on)
 
-num_ds = np.arange(2,7,1)   
+num_ds = np.arange(1,7,1)   
 name_columns = data_dom.columns.to_list()[5:11]  #Indexing used to create the combination up to six datasets only amid rainfall datasets
 list_comb = [0] * len(num_ds)
 counter = 0
@@ -218,6 +221,12 @@ for C_par in c_param:
                             # - Evaluation metrics   
                             # The dictionary created at each iteration will form a row in the csv with the evaluation metric
                             metrics = {
+                                # Configuration provides the name indicating the model's configuration trained. it reports:
+                                # - The SPI
+                                # - The value of the C-parameter
+                                # - The sampling technique
+                                # - The names of the input datasets
+                                # - The type of kernel
                                 'Configuration': f"{C_par}-{st}-{''.join(name_DS[op][2] for op in np.arange(len(name_DS)))}-{kernel[k_i]}",
                                 'Fold' : n_fold,
                                 'Probabilities': " Pr > " + format(prob_v[k].round(2)),
