@@ -1,0 +1,2 @@
+LSTM minmax 2 Window:['lagged_milk']_Germany	Mon Jun  7 19:20:52 2021	0.044	0.075	0.165	0.156	0.235	0.39	-0.062	-2.589	-11.617
+LSTM minmax 2 Window:['ndv', 'lagged_milk']_Germany	Mon Jun  7 19:20:52 2021	0.043	0.077	0.175	0.156	0.238	0.403	-0.037	-2.708	-12.376
