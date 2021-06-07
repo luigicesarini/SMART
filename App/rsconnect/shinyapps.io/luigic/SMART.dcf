@@ -1,0 +1,13 @@
+name: SMART
+title: SMART
+username:
+account: luigic
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 4193843
+bundleId: 4665317
+url: https://luigic.shinyapps.io/SMART/
+when: 1622564528.25724
+lastSyncTime: 1622564528.25726
+asMultiple: FALSE
+asStatic: FALSE

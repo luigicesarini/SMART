@@ -4,11 +4,15 @@ SMART is a project funded by World Bank's Challenge Fund. An initiative of the G
 
 
 As part of the deliverables of the project, we were required to provide all source code of the models developed and a web app that would showcase and divulge the main findings of the project.  
-This repository, is divided in two main folder: *MachineLearning*, containing the scripts used to create train and evaluate the support vector machine and neural network models, and *App* containing all the files and code used to run the web application.  
+This repository, is divided in two main folder: *MachineLearning*, containing the scripts used to create, train and evaluate the machine learning models, and *App* containing all the files and code used to run the web application.  
+Inside the machine learning folder, are stored reproducible scripts for the two line research the project focused on:
+
+1. Identification of extreme events: Floods and Droughts
+2. Prediction of milk production
 
 The web App is designed with the intent of getting the final users familiarise with machine learning models and parametric insurance. As of the 3rd of June 2021, the app is still under development and can be found at:
 
-[luigic.shinyapps.io/SMART/](luigic.shinyapps.io/SMART/)
+[https://luigic.shinyapps.io/SMART/](https://luigic.shinyapps.io/SMART/)
 
 The final report of the project can be found at:
 
