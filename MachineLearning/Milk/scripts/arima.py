@@ -37,6 +37,8 @@ RANDOM_SEED = 42
 np.random.seed(RANDOM_SEED)
 #Store date for printing purposes
 date = datetime.today().strftime('%d_%b_%y')
+# Store variables for printing purposes
+name_method = 'ARIMA'
 ################################
 #DEFINITION OF CUSTOM FUNCTION
 ################################
@@ -67,7 +69,7 @@ def print_performances(type_model,
         "r2_te"     :   r2_test,
     }
     if to_txt:
-        pd.DataFrame(prepare_print, index = [0]).to_csv(f"MachineLearning/Milk/output/metrics_milk_production_{date}.csv",
+        pd.DataFrame(prepare_print, index = [0]).to_csv(f"MachineLearning/Milk/output/metrics_milk_production_{name_method}_{datetime.today().strftime('%d_%m_%y')}.txt",
                         quoting=0, index=False, index_label=False, mode='a', header=False, sep='\t')
     else:
         print(prepare_print)

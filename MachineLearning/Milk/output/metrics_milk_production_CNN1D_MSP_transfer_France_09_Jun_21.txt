@@ -1,0 +1,3 @@
+Country Train	Transfer	Length of the window	EV Variables	Scaling	Overall MAE	Overall MSE	Overall R^2
+France	Yes	2	lagged_milk	minmax	0.19397258587948907	0.08468746795487696	-0.2281358311635373
+France	Yes	2	spi/lagged_milk	minmax	0.18541651793591607	0.08588142572550454	-0.24545058096554073

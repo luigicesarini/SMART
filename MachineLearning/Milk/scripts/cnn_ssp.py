@@ -3,7 +3,7 @@ File name: cnn_ssp.py
 Author: Luigi Cesarini
 E-mail: luigi.cesarini@iusspavia.it
 Date created: 27 November 2020 
-Date last modified: 07 June 2021
+Date last modified: 08 June 2021
 
 ####################################################################
 PURPOSE:
@@ -41,7 +41,7 @@ tf.random.set_seed(RANDOM_SEED)
 # Store variables for printing purposes
 d = datetime.datetime.now()   
 date = datetime.datetime.today()
-name_method = 'CNN1D'
+name_method = 'CNN1D_SSP'
 
 """
 Define a function that prints the performances of the models:
@@ -99,18 +99,29 @@ countries = [
     'Germany',
     'Italy',
     ]
-# Different lenght of the moving window explored
+"""
+Different lenght of the moving window explored.
+For predictions made on the Dominican Republic data,
+window larger than 13 months are not allowed, which is
+a direct consequence of the few data at disposal and 
+the derived split of the data. In fact, the split for 
+the dominican data is:
+Training:   2009-01-01/2013-12-01
+Validation: 2014-01-01/2014-12-01
+Testing:    2015-01-01/2015-12-01
+"""
 length_window = np.arange(2,24,1)
 # How to scale the data. using 'std' will standardized the data  
 type_scaling = 'minmax'
-# 4b) CNN 1D 6 variables:
+#Start of the iteration loop 
 for country in countries:
     for window in length_window:
         #Climate variables used as input
         # - spi: Standard precipitation index 
         # - anomaly_thi: Anomaly of the temperature-humdity index
         # - ndvi: Vegetation index
-        training_variables  =  ["spi",
+        training_variables  =  [
+                                "spi",
                                 "anomaly_thi",
                                 "ndv"
                                 ] 
@@ -127,7 +138,7 @@ for country in countries:
                 # Using the milk of the 1 month lagged milk as input for the model
                 data["lagged_milk"] = data.milk.shift(0)
                 # Select the months used to train the model. They have to match the period for which the climate data are available
-                data = data.loc["1982-02-01":"2019-11-01"] # !! REMEMBER: Dropping NA we loose the last month
+                data = data.loc["1982-02-01":"2019-11-01"] 
                 # Store the dates in a variable 
                 dates = pd.DataFrame(data.index, columns = ["date"])
                 # Reordering of the dataframe
@@ -152,7 +163,7 @@ for country in countries:
                 training   = data.iloc[np.array(dates.date < start_validation)]
                 validation = data.iloc[np.array((dates.date >= index_validation)&(dates.date <= start_testing))]
                 testing    = data.iloc[np.array(dates.date >= index_testing)]
-                # Split of input a target
+                # Split of input and target
                 x_train,y_train = training[var], training[["milk"]]
                 x_val,y_val     = validation[var],   validation[["milk"]]
                 x_test, y_test  = testing[var],  testing[["milk"]]
@@ -183,7 +194,7 @@ for country in countries:
                 x_te,y_te   = create_dataset(x_testing,milk_te,window)
 
                 # Build the model with the functional API.
-                # Using only one LSTM layer
+                # Using only one CNN1D layer
                 # Clear previous possible model still in memory
                 tf.keras.backend.clear_session()
 
@@ -200,7 +211,7 @@ for country in countries:
                 # Check summary of model's architecture
                 print(model.summary())
                 # Save an image of the network architecture to file    
-                tf.keras.utils.plot_model(model,show_shapes = True,show_layer_names = True,to_file="model_{}.png".format(int(time.time())))
+                tf.keras.utils.plot_model(model, show_shapes = True, show_layer_names = True, to_file = f"MachineLearning/Milk/output/model_{name_method}_{int(time.time())}.png")
                 """
                 Compile the model:
                 Mean absolute error used as loss function during the training.
@@ -226,7 +237,7 @@ for country in countries:
 
                 # Save the trained model. This way the model can be loaded at a later stage 
                 # and be used to make prediction on the Dominican Republic or any other country. 
-                model.save(f'MachineLearning/Milk/trained_model/{country}/CNN1D_{"".join([x[0] for x in var])}_{country}_W{window}')
+                model.save(f'MachineLearning/Milk/trained_model/{country}/CNN1D_SSP_{"".join([x[0] for x in var])}_{country}_W{window}')
                 # Print the performances of the model to disk
                 print_performances(type_model,
                                     mae_train   = round((sum(abs(model.predict(x_tr)-y_tr))/len(y_tr))[0],3),
@@ -239,7 +250,7 @@ for country in countries:
                                     r2_val      = round(r2_score(y_vl,model.predict(x_vl)),3),
                                     r2_test     = round(r2_score(y_te,model.predict(x_te)),3),
                                     name_method = name_method,
-                                    to_txt      = True,
-)
+                                    to_txt      = True
+                )
 
  
