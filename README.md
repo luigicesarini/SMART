@@ -22,7 +22,7 @@ The project has also provided the opportunity to produce scientific manuscript p
 
 **Published Work**
 
-Cesarini, L., Figueiredo, R., Monteleone, B., and Martina, M. L. V.: The potential of big data and machine learning for weather index insurance, Nat. Hazards Earth Syst. Sci. Discuss. [preprint], [https://doi.org/10.5194/nhess-2020-220](), in review, 2020. 	
+Cesarini, L., Figueiredo, R., Monteleone, B., and Martina, M. L. V.: The potential of machine learning for weather index insurance, Nat. Hazards Earth Syst. Sci., 21, 2379–2405, [https://doi.org/10.5194/nhess-21-2379-2021](https://doi.org/10.5194/nhess-21-2379-2021), 2021.	
 
 
 
