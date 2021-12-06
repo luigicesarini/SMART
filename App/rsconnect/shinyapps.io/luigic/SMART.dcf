@@ -4,10 +4,10 @@ username:
 account: luigic
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
-appId: 4193843
-bundleId: 4665317
+appId: 4304956
+bundleId: 4746769
 url: https://luigic.shinyapps.io/SMART/
-when: 1622564528.25724
-lastSyncTime: 1622564528.25726
+when: 1624439514.73256
+lastSyncTime: 1624439514.73258
 asMultiple: FALSE
 asStatic: FALSE
