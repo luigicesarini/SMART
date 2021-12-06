@@ -60,6 +60,7 @@ def plot_cm(labels, predictions, p):
   plt.show()
 ################################
 #Set working directory to the parent directory of the project:"SMART"
+#os.chdir("../../../")
 print(os.getcwd())
 #os.chdir(<SMART>)
 # Create an early stopping callback. This callback is used to stop the training once
@@ -68,7 +69,7 @@ es = EarlyStopping(monitor='val_loss', min_delta=1e-20, verbose=1, patience=100)
 # STORE THE ACRONYM OF THE METHOD FOR PRINTING PURPOSES
 name_method = "nn"
 ####### Load the whole datasets
-data_dom = pd.read_csv(find('dataset_DOM.txt',os.getcwd()), sep = "\t")
+data_dom = pd.read_csv(find('dataset.txt',os.getcwd()), sep = "\t")
 # Shift soil moisture to get the values of the previous day 
 data_dom.iloc[:-1,1:5] = data_dom.iloc[:,1:5].shift(-1).iloc[:-1,:]
 # Split data for training and testing (75/25). A percentage of the training set will later be used 
@@ -206,7 +207,7 @@ for st in sampling_technique:
           for k in np.arange(J+1):
             if k == 0:
               x = layers.Dense(hidden_nodes[J-k],activation=hidden_act[n])(inputs)
-              x = layers.Dropout(hidden_nodes[J-k]*1/(k+2)/hidden_nodes[J-k])(x)
+              x = layers.Dropout(hidden_nodes[J-k]*1/(k+2)/hidden_nodes[J-k])(x)             
             else:
               x = layers.Dense(hidden_nodes[J-k],activation=hidden_act[n])(x)
               x = layers.Dropout(hidden_nodes[J-k]*1/(k+2)/hidden_nodes[J-k])(x)

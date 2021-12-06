@@ -50,6 +50,7 @@ def find(name, path):
     for root,dirs,files in os.walk(path):
         if name in files:
             return os.path.join(root, name)
+
 # This function is  used to plot the confusion matrix for a given probability threshold
 def plot_cm(labels, predictions, p):
     cm = confusion_matrix(labels, predictions > p)
@@ -67,7 +68,7 @@ print(os.getcwd())
 name_method = "svm"
 
 # Load the whole dataset 
-data_dom = pd.read_csv(find('dataset_DOM.txt',os.getcwd()), sep = "\t")
+data_dom = pd.read_csv(find('dataset.txt',os.getcwd()), sep = "\t")
 # Shift soil moisture to get the values of the previous day 
 data_dom.iloc[:-1,1:5] = data_dom.iloc[:,1:5].shift(-1).iloc[:-1,:]
 
