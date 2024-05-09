@@ -24,6 +24,7 @@ The project has also provided the opportunity to produce scientific manuscript p
 
 Cesarini, L., Figueiredo, R., Monteleone, B., and Martina, M. L. V.: The potential of machine learning for weather index insurance, Nat. Hazards Earth Syst. Sci., 21, 2379–2405, [https://doi.org/10.5194/nhess-21-2379-2021](https://doi.org/10.5194/nhess-21-2379-2021), 2021.	
 
+Cesarini, L., Gonçalves, R., Martina, M., Romão, X., Monteleone, B., Lobo Pereira, F., & Figueiredo, R. (2024). Comparison of deep learning models for milk production forecasting at national scale. Computers and Electronics in Agriculture, 221, 108933. [https://doi.org/10.1016/j.compag.2024.108933](https://doi.org/10.1016/j.compag.2024.108933)
 
 
 
